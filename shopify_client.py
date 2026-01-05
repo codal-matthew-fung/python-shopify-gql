@@ -14,7 +14,6 @@ class ShopifyClient:
         self.api_version = os.getenv("SHOPIFY_ADMIN_API_VERSION", "2024-01")
         self.url = f"https://{self.shop_name}.myshopify.com/admin/api/{self.api_version}/graphql.json"
         
-        # Ensure THIS line is indented exactly like the ones above it
         self.session = requests.Session()
         
         self.session.headers.update({
