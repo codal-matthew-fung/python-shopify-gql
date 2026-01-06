@@ -1,3 +1,7 @@
+from shopify_client import ShopifyClient
+from transform import transform_products
+import json
+
 def extract_all_products(data):
     all_products = []
     hasNextPage = True
@@ -25,7 +29,7 @@ def extract_all_products(data):
 
     return all_products
 
-from shopify_client import ShopifyClient
+
 
 client = ShopifyClient()
 
@@ -51,3 +55,11 @@ query GetProducts($cursor: String) {
 product_list = extract_all_products(client)
 
 print(f"Total products extracted: {len(product_list)}")
+
+df = transform_products(product_list)
+
+print(df.head())
+
+print(f"Products by Vendor:\n{df['vendor'].value_counts()}")
+
+    
