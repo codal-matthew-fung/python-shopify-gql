@@ -19,10 +19,13 @@ def load_to_sql(data, db_name="shopify_products.db"):
     no_errors = df.loc[df['needs_fixing'] == False]
     errors = df.loc[df['needs_fixing'] == True]
 
-    df.to_sql("products", connection, if_exists='replace', index=False)
-    df.to_sql("errors", connection, if_exists='replace', index=False)
+    no_errors.to_sql("products", connection, if_exists='replace', index=False)
+    errors.to_sql("errors", connection, if_exists='replace', index=False)
+    print("First 5 records loaded to 'products' table:")
+    print(no_errors.head())
 
-    print(df.head())
+    print("First 5 records loaded to 'errors' table:")
+    print(errors.head())
 
     connection.close()
     print(f"Data successfully loaded to SQLite database")

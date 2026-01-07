@@ -3,6 +3,9 @@ from transform import transform_products
 from load import load_to_excel, load_to_sql, check_db
 from pathlib import Path
 import json
+import inquirer
+from query_db import query_db
+import sys
 
 def get_last_updated_timestamp():
     path = Path("watermark.json")
@@ -92,8 +95,6 @@ def run_etl():
     last_updated = get_last_updated_timestamp()
     product_list = extract_all_products(last_updated)
 
-    check_db()
-
     if product_list is None or len(product_list) == 0:
         print(f"The watermark timestamp is: {last_updated}")
         print("No products extracted. ETL process terminated.")
@@ -113,5 +114,22 @@ def run_etl():
 
     print("ETL process completed.")
 
+    sys.exit(0)
+
 if __name__ == "__main__":
-    run_etl()
+    questions = [
+        inquirer.List(
+            'action',
+            message="What do you want to do?",
+            choices=['Run ETL Process', 'Query the Database', 'Exit'],
+        )
+    ]
+
+    answers = inquirer.prompt(questions)
+
+    if not answers:
+        print("No action selected. Exiting.")
+    if answers['action'] == 'Run ETL Process':
+        run_etl()
+    elif answers['action'] == 'Query the Database':
+        query_db()

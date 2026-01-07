@@ -9,4 +9,5 @@ def query_db(query="SELECT * FROM products LIMIT 5;"):
     conn.close()
     return df
 
-query_db()
+if __name__ == "__main__":
+    query_db()
