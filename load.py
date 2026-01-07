@@ -3,8 +3,8 @@ import sqlite3
 
 def load_to_excel(data, filename="shopify_products.xlsx"):
     df = pd.DataFrame(data)
-    no_errors = df.loc[df['needs_fixing'] == False]
-    errors = df.loc[df['needs_fixing'] == True]
+    no_errors = df.loc[not df['needs_fixing']]
+    errors = df.loc[df['needs_fixing']]
     print(f"Writing {len(no_errors)} valid records and {len(errors)} records with errors to {filename}")
     with pd.ExcelWriter(filename) as writer:
         no_errors.to_excel(writer, index=False, sheet_name="Products")
@@ -16,8 +16,8 @@ def load_to_sql(data, db_name="shopify_products.db"):
     connection = sqlite3.connect(db_name)
     df = pd.DataFrame(data)
 
-    no_errors = df.loc[df['needs_fixing'] == False]
-    errors = df.loc[df['needs_fixing'] == True]
+    no_errors = df.loc[not df['needs_fixing']]
+    errors = df.loc[df['needs_fixing']]
 
     no_errors.to_sql("products", connection, if_exists='replace', index=False)
     errors.to_sql("errors", connection, if_exists='replace', index=False)
@@ -28,7 +28,7 @@ def load_to_sql(data, db_name="shopify_products.db"):
     print(errors.head())
 
     connection.close()
-    print(f"Data successfully loaded to SQLite database")
+    print("Data successfully loaded to SQLite database")
 
 
 def check_db():
