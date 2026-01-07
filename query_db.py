@@ -1,6 +1,7 @@
 import sqlite3
 import pandas as pd
 
+
 def query_db(query="SELECT * FROM products LIMIT 5;"):
     query = input("Enter your SQL query: ")
     conn = sqlite3.connect("shopify_products.db")
@@ -8,6 +9,7 @@ def query_db(query="SELECT * FROM products LIMIT 5;"):
     print(df)
     conn.close()
     return df
+
 
 if __name__ == "__main__":
     query_db()
