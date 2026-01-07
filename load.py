@@ -43,11 +43,12 @@ def check_db():
     if tables.empty:
         print("Table 'products' does not exist in the database.")
         return
-    # Run a simple query to check the connection
-    query = "SELECT * FROM products;"
 
-    summary_df = pd.read_sql_query(query, conn)
-    print("Database connection successful. Here is a summary of products by vendor:")
-    print(summary_df)
+    # Run a simple query to check the connection
+    error_query = "SELECT id, title, needs_fixing FROM products WHERE needs_fixing = 1;"
+
+    error_query = pd.read_sql_query(error_query, conn)
+    print("Database connection successful. Here is a summary of products by that need fixing:")
+    print(error_query)
 
     conn.close()
