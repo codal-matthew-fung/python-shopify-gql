@@ -1,8 +1,31 @@
 from shopify_client import ShopifyClient
 from transform import transform_products
+from load import load_to_excel
 import json
 
-def extract_all_products(data):
+def extract_all_products():
+    client = ShopifyClient()
+
+    products_query = """
+    query GetProducts($cursor: String) {
+    products(first: 50, after: $cursor) {
+        pageInfo {
+            hasNextPage
+            endCursor
+        }
+        edges {
+            node {
+                id
+                title
+                descriptionHtml
+                handle
+                vendor
+            }
+        }
+    }
+    }
+    """
+
     all_products = []
     hasNextPage = True
     cursor = None
@@ -30,36 +53,17 @@ def extract_all_products(data):
     return all_products
 
 
-
-client = ShopifyClient()
-
-products_query = """
-query GetProducts($cursor: String) {
-  products(first: 50, after: $cursor) {
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
-    edges {
-      node {
-        id
-        title
-        handle
-        vendor
-      }
-    }
-  }
-}
-"""
-
-product_list = extract_all_products(client)
-
-print(f"Total products extracted: {len(product_list)}")
-
-df = transform_products(product_list)
-
-print(df.head())
-
-print(f"Products by Vendor:\n{df['vendor'].value_counts()}")
-
     
+def run_etl():
+    product_list = extract_all_products()
+
+    print(f"Total products extracted: {len(product_list)}")
+
+    df = transform_products(product_list)
+    
+    load_to_excel(df, "shopify_products.xlsx")
+
+    print("ETL process completed successfully.")
+
+if __name__ == "__main__":
+    run_etl()
