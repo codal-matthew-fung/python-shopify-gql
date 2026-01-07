@@ -1,6 +1,6 @@
 from shopify_client import ShopifyClient
 from transform import transform_products
-from load import load_to_excel
+from load import load_to_excel, load_to_sql, check_db
 from pathlib import Path
 import json
 
@@ -9,8 +9,10 @@ def get_last_updated_timestamp():
     last_updated = "1970-01-01T00:00:00Z"  # Default to epoch start
     if path.is_file():
         watermark = open("watermark.json", "r").read()
-        watermark_json = json.loads(watermark)
-        last_updated = watermark_json["last_updated"]
+        if (watermark):
+            watermark_json = json.loads(watermark)
+            if watermark_json and ("last_updated" in watermark_json):
+                last_updated = watermark_json["last_updated"]
     return last_updated
 
 def extract_all_products(last_updated = "1970-01-01T00:00:00Z"):
@@ -85,11 +87,12 @@ def update_watermark(product_list):
         watermark = {"last_updated": most_recent_updated_product.get("updatedAt")}
         json.dump(watermark, f)
         print(f"Watermark updated, the most recent product updated at: {most_recent_updated_product.get('updatedAt')}")
-
     
 def run_etl():
     last_updated = get_last_updated_timestamp()
     product_list = extract_all_products(last_updated)
+
+    check_db()
 
     if product_list is None or len(product_list) == 0:
         print(f"The watermark timestamp is: {last_updated}")
@@ -104,7 +107,11 @@ def run_etl():
     
     load_to_excel(df, "shopify_products.xlsx")
 
-    print("ETL process completed successfully.")
+    load_to_sql(df)
+
+    check_db()
+
+    print("ETL process completed.")
 
 if __name__ == "__main__":
     run_etl()

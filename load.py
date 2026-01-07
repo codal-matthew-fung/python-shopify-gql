@@ -1,4 +1,5 @@
 import pandas as pd
+import sqlite3
 
 def load_to_excel(data, filename="shopify_products.xlsx"):
     df = pd.DataFrame(data)
@@ -10,3 +11,43 @@ def load_to_excel(data, filename="shopify_products.xlsx"):
         errors.to_excel(writer, index=False, sheet_name="Errors")
 
     print(f"Data successfully loaded to {filename}")
+
+def load_to_sql(data, db_name="shopify_products.db"):
+    connection = sqlite3.connect(db_name)
+    df = pd.DataFrame(data)
+
+    no_errors = df.loc[df['needs_fixing'] == False]
+    errors = df.loc[df['needs_fixing'] == True]
+
+    df.to_sql("products", connection, if_exists='replace', index=False)
+    df.to_sql("errors", connection, if_exists='replace', index=False)
+
+    print(df.head())
+
+    connection.close()
+    print(f"Data successfully loaded to SQLite database")
+
+
+def check_db():
+    conn = sqlite3.connect("shopify_products.db")
+
+    if (conn is None):
+        print("Failed to connect to the database.")
+        return
+    check_table_exists = """
+    SELECT name
+    FROM sqlite_master
+    WHERE type = 'table' AND name = 'products';
+    """
+    tables = pd.read_sql_query(check_table_exists, conn)
+    if tables.empty:
+        print("Table 'products' does not exist in the database.")
+        return
+    # Run a simple query to check the connection
+    query = "SELECT * FROM products;"
+
+    summary_df = pd.read_sql_query(query, conn)
+    print("Database connection successful. Here is a summary of products by vendor:")
+    print(summary_df)
+
+    conn.close()
