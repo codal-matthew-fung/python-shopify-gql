@@ -45,7 +45,7 @@ Raw nested JSON is converted into a flat **Pandas DataFrame**.
 
 ---
 
-## 🧠 Key Learnings: Transitioning from JS to Python
+## Key Learnings: Transitioning from JS to Python
 
 Coming from a JavaScript background, this project highlighted several "Pythonic" advantages:
 
@@ -55,7 +55,7 @@ Coming from a JavaScript background, this project highlighted several "Pythonic"
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 python-training/
@@ -63,6 +63,7 @@ python-training/
 ├── shopify_client.py   # GQL API Client & Session Management
 ├── transform.py        # Pandas Transformation Logic
 ├── load.py             # Write data to Excel and SQL
+├── query_db.py         # Query the DB using SQL
 ├── watermark.json      # Watermark for Incremental Syncs
 ├── requirements.txt    # Project Dependencies
 └── README.md           # Project Documentation
