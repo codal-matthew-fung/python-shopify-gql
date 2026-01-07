@@ -4,7 +4,7 @@ import sqlite3
 
 def load_to_excel(data, filename="shopify_products.xlsx"):
     df = pd.DataFrame(data)
-    no_errors = df.loc[not df["needs_fixing"]]
+    no_errors = df.loc[~df["needs_fixing"]]
     errors = df.loc[df["needs_fixing"]]
     print(
         f"Writing {len(no_errors)} valid records and {len(errors)} records with errors to {filename}"
@@ -20,7 +20,7 @@ def load_to_sql(data, db_name="shopify_products.db"):
     connection = sqlite3.connect(db_name)
     df = pd.DataFrame(data)
 
-    no_errors = df.loc[not df["needs_fixing"]]
+    no_errors = df.loc[~df["needs_fixing"]]
     errors = df.loc[df["needs_fixing"]]
 
     no_errors.to_sql("products", connection, if_exists="replace", index=False)
