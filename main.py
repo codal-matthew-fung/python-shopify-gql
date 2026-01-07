@@ -1,14 +1,29 @@
 from shopify_client import ShopifyClient
 from transform import transform_products
 from load import load_to_excel
+from pathlib import Path
 import json
 
-def extract_all_products():
+def get_last_updated_timestamp():
+    path = Path("watermark.json")
+    last_updated = "1970-01-01T00:00:00Z"  # Default to epoch start
+    if path.is_file():
+        watermark = open("watermark.json", "r").read()
+        watermark_json = json.loads(watermark)
+        last_updated = watermark_json["last_updated"]
+    return last_updated
+
+def extract_all_products(last_updated = "1970-01-01T00:00:00Z"):
+    last_updated = get_last_updated_timestamp()
+
     client = ShopifyClient()
 
     products_query = """
-    query GetProducts($cursor: String) {
-    products(first: 50, after: $cursor) {
+    query GetProducts(
+        $cursor: String
+        $query: String = "updated_at:>'{last_updated}'"
+    ) {
+    products(first: 50, after: $cursor, reverse: true, query: $query) {
         pageInfo {
             hasNextPage
             endCursor
@@ -20,6 +35,7 @@ def extract_all_products():
                 descriptionHtml
                 handle
                 vendor
+                updatedAt
             }
         }
     }
@@ -33,10 +49,15 @@ def extract_all_products():
     print("Extracting products...")
 
     while hasNextPage:
-        variables = {"cursor": cursor}
+        variables = {"cursor": cursor, "query": f"updated_at:>'{last_updated}'"}
         response = client.execute_query(products_query, variables)
+        if not response or 'errors' in response:
+            if 'errors' in response:
+                print("Errors occurred while fetching products:", response['errors'])
+            break
 
-        if not response:
+        if len(response['data']['products']['edges']) == 0:
+            print(f"No products found updated after the watermark timestamp ({last_updated}).")
             break
         
         data = response['data']['products']
@@ -53,11 +74,31 @@ def extract_all_products():
     return all_products
 
 
+def update_watermark(product_list):
+    if not product_list:
+        print("No products found to update watermark.")
+        return
+    print("Updating watermark...")
+    sorted_products = sorted(product_list, reverse=True, key=lambda x: x["updatedAt"])
+    most_recent_updated_product = sorted_products[0]
+    with open("watermark.json", "w") as f:
+        watermark = {"last_updated": most_recent_updated_product.get("updatedAt")}
+        json.dump(watermark, f)
+        print(f"Watermark updated, the most recent product updated at: {most_recent_updated_product.get('updatedAt')}")
+
     
 def run_etl():
-    product_list = extract_all_products()
+    last_updated = get_last_updated_timestamp()
+    product_list = extract_all_products(last_updated)
+
+    if product_list is None or len(product_list) == 0:
+        print(f"The watermark timestamp is: {last_updated}")
+        print("No products extracted. ETL process terminated.")
+        return
 
     print(f"Total products extracted: {len(product_list)}")
+
+    update_watermark(product_list)
 
     df = transform_products(product_list)
     
