@@ -1,7 +1,6 @@
 import os
 import requests
 from dotenv import load_dotenv
-from typing import Dict, Any
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,9 +19,7 @@ class ShopifyClient:
             {"X-Shopify-Access-Token": self.token, "Content-Type": "application/json"}
         )
 
-    def execute_query(
-        self, query: str, variables: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+    def execute_query(self, query, variables):
         """Sends a GQL query to Shopify and returns the JSON response."""
         response = self.session.post(
             self.url, json={"query": query, "variables": variables}
