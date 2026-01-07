@@ -6,6 +6,7 @@ import json
 import inquirer
 from query_db import query_db
 import sys
+import os
 
 def get_last_updated_timestamp():
     path = Path("watermark.json")
@@ -117,6 +118,10 @@ def run_etl():
     sys.exit(0)
 
 if __name__ == "__main__":
+    if not os.getenv("SHOPIFY_STORE_NAME") or not os.getenv("SHOPIFY_ACCESS_TOKEN") or not os.getenv("SHOPIFY_ADMIN_API_VERSION"):
+        print("Please set the SHOPIFY_STORE_NAME, SHOPIFY_ACCESS_TOKEN, and SHOPIFY_ADMIN_API_VERSION environment variables in your .env file.")
+        sys.exit(1)
+    
     questions = [
         inquirer.List(
             'action',
