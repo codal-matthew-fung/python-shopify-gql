@@ -1,3 +1,5 @@
 .DS_STORE
 __pycache__
-
+shopify_products.xlsx
+shopify_products.db
+watermark.json
