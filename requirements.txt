@@ -13,6 +13,7 @@ python-dotenv==1.2.1
 pytz==2025.2
 readchar==4.2.1
 requests==2.32.5
+ruff==0.14.10
 runs==1.2.2
 six==1.17.0
 tzdata==2025.3
