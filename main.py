@@ -29,24 +29,36 @@ def extract_all_products(last_updated="1970-01-01T00:00:00Z"):
     products_query = """
     query GetProducts(
         $cursor: String
-        $query: String = "updated_at:>'{last_updated}'"
+        $query: String
     ) {
-    products(first: 50, after: $cursor, reverse: true, query: $query) {
-        pageInfo {
-            hasNextPage
-            endCursor
-        }
-        edges {
-            node {
-                id
-                title
-                descriptionHtml
-                handle
-                vendor
-                updatedAt
+        products(first: 50, after: $cursor, reverse: true, query: $query) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            edges {
+                node {
+                    id
+                    title
+                    descriptionHtml
+                    handle
+                    vendor
+                    updatedAt
+                    variants(first: 5) {
+                        edges {
+                            node {
+                                id
+                                title
+                                sku
+                                inventoryQuantity
+                                price  # This is the current selling price
+                                compareAtPrice # This is the "original" price (for sales)
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
     }
     """
 
@@ -108,7 +120,7 @@ def run_etl():
         print("No products extracted. ETL process terminated.")
         return
 
-    print(f"Total products extracted: {len(product_list)}")
+    print(f"Total products extracted: {len(product_list)}\n")
 
     update_watermark(product_list)
 
@@ -118,9 +130,11 @@ def run_etl():
 
     load_to_sql(df)
 
-    check_db()
+    check_db(field="vendor")
+    check_db(field="price_missing")
+    check_db(field="total_inventory")
 
-    print("ETL process completed.")
+    print("\nETL process completed.")
 
     sys.exit(0)
 
